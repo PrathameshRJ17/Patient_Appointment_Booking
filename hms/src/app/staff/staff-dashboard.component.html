@@ -1,0 +1,182 @@
+<div class="dashboard-container">
+  <h1>Staff Dashboard</h1>
+
+  <div class="tabs">
+    <button (click)="activeTab='appointments'" [class.active]="activeTab=='appointments'">Manage Appointments</button>
+    <button (click)="activeTab='doctors'" [class.active]="activeTab=='doctors'">Doctor Availability</button>
+    <button (click)="activeTab='profile'" [class.active]="activeTab=='profile'">My Profile</button>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Appointments Tab -->
+  <div *ngIf="activeTab=='appointments'" class="tab-content">
+    <h2>Manage Appointments</h2>
+    <div *ngIf="loading" class="loading">Loading appointments...</div>
+
+    <div *ngIf="!loading && appointments.length === 0" class="empty-state">No appointments found</div>
+
+    <div *ngIf="!loading && appointments.length > 0" class="appointments-list">
+      <div *ngFor="let apt of appointments" class="appointment-card">
+        <div *ngIf="isDoneAppointment(apt)" class="appointment-done-alert">
+          <span class="alert-icon">✓</span>
+          <span class="alert-text">{{ getDoneAlertMessage(apt) }}</span>
+        </div>
+        <div class="card-header">
+          <div>
+            <h3>{{ apt.patientName }}</h3>
+            <p class="doctor-name">Dr. {{ apt.doctorName }}</p>
+          </div>
+          <span class="status-badge" [ngStyle]="{ backgroundColor: getStatusColor(apt.statusText || apt.status) }">{{ apt.statusText || apt.status }}</span>
+        </div>
+        <div class="card-body">
+          <p><strong>Date:</strong> {{ apt.appointmentDate | date:'medium' }}</p>
+          <p><strong>Time Slot:</strong> {{ apt.timeSlotDisplay || apt.timeSlot }}</p>
+          <div class="appointment-actions">
+            <button (click)="openStatusForm(apt)" class="btn-primary">Manage Status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Form Modal -->
+    <div *ngIf="selectedAppointment as appointment" class="modal-overlay" (click)="cancelStatusForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Manage Appointment - {{ appointment.patientName }}</h3>
+          <button class="close-btn" (click)="cancelStatusForm()">×</button>
+        </div>
+        <form [formGroup]="statusForm" class="modal-body">
+          <div class="form-group">
+            <label>Action:</label>
+            <div class="button-group">
+              <button type="button" (click)="approveAppointment()" class="btn-approve" [disabled]="loading">
+                {{ loading ? 'Processing...' : 'Approve' }}
+              </button>
+              <button type="button" (click)="completeAppointment()" class="btn-complete" [disabled]="loading">
+                {{ loading ? 'Processing...' : 'Complete & Generate Bill' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="rejectAppointment()" class="btn-reject" [disabled]="loading">
+              {{ loading ? 'Processing...' : 'Reject' }}
+            </button>
+            <button type="button" (click)="cancelStatusForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Availability Tab -->
+  <div *ngIf="activeTab=='doctors'" class="tab-content">
+    <h2>Doctor Availability - Today</h2>
+    <div *ngIf="loading" class="loading">Loading doctors...</div>
+
+    <div *ngIf="!loading && doctors.length === 0" class="empty-state">No doctors found</div>
+
+    <div *ngIf="!loading && doctors.length > 0" class="doctors-grid">
+      <div *ngFor="let doctor of doctors" class="doctor-card">
+        <h3>{{ doctor.user?.fullName || doctor.fullName || doctor.name || 'Doctor' }}</h3>
+        <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+        <p><strong>Consultation Fee:</strong> ₹{{ doctor.consultationFee }}</p>
+        <p>
+          <strong>Status:</strong>
+          <span class="availability-badge" [class]="doctor.availability.toLowerCase()">
+            {{ doctor.availability }}
+          </span>
+        </p>
+        <button (click)="openAvailabilityForm(doctor)" class="btn-small">Update Status</button>
+      </div>
+    </div>
+
+    <!-- Availability Form Modal -->
+    <div *ngIf="selectedDoctor" class="modal-overlay" (click)="cancelAvailabilityForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Update Availability</h3>
+          <p class="modal-doctor-name">Dr. {{ selectedDoctor.user?.fullName }}</p>
+          <button class="close-btn" (click)="cancelAvailabilityForm()">×</button>
+        </div>
+        <form [formGroup]="availabilityForm" class="modal-body">
+          <div class="form-group">
+            <label>Availability Status:</label>
+            <select formControlName="availability" required>
+              <option value="Available">Available</option>
+              <option value="Absent">Absent</option>
+              <option value="Delayed">Delayed</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="availabilityForm.value.availability === 'Delayed'">
+            <label>Delay Duration (hours):</label>
+            <input type="number" formControlName="delayHours" min="0" max="24" placeholder="Enter hours">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="updateDoctorAvailability()" class="btn-primary" [disabled]="availabilityForm.invalid || loading">
+              {{ loading ? 'Updating...' : 'Update Status' }}
+            </button>
+            <button type="button" (click)="cancelAvailabilityForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div *ngIf="activeTab=='profile'" class="tab-content">
+    <h2>My Profile</h2>
+    <div *ngIf="staffInfo" class="profile-section">
+      <div class="profile-details">
+        <div class="detail-row">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">{{ staffInfo.fullName || staffInfo.user?.fullName || 'Not Set' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Email:</span>
+          <span class="detail-value">{{ staffInfo.email || staffInfo.user?.email || 'Not Set' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Phone Number:</span>
+          <span class="detail-value">{{ staffInfo.phoneNumber || staffInfo.user?.phoneNumber || 'Not Set' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Shift Timing:</span>
+          <span class="detail-value">{{ staffInfo.shiftTiming || 'Not Set' }}</span>
+        </div>
+      </div>
+
+      <button (click)="editMode = !editMode" class="btn-edit">
+        {{ editMode ? 'Cancel Edit' : 'Edit Profile' }}
+      </button>
+
+      <form *ngIf="editMode" [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+        <div class="form-group">
+          <label>Name:</label>
+          <input type="text" formControlName="fullName" required>
+        </div>
+
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" formControlName="email" required>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number:</label>
+          <input type="tel" formControlName="phoneNumber" required>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="profileForm.invalid || loading">
+          {{ loading ? 'Updating...' : 'Update Profile' }}
+        </button>
+      </form>
+    </div>
+
+    <div *ngIf="!staffInfo" class="empty-state">
+      <p>Loading profile...</p>
+    </div>
+  </div>
+</div>

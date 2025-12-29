@@ -1,0 +1,220 @@
+<div class="dashboard-container">
+  <h1>Admin Dashboard</h1>
+
+  <div class="tabs">
+    <button (click)="activeTab='overview'" [class.active]="activeTab=='overview'">Overview</button>
+    <button (click)="activeTab='pending'" [class.active]="activeTab=='pending'">Pending Approvals</button>
+    <button (click)="activeTab='doctors'" [class.active]="activeTab=='doctors'">All Doctors</button>
+    <button (click)="activeTab='patients'" [class.active]="activeTab=='patients'">All Patients</button>
+    <button (click)="activeTab='staff'" [class.active]="activeTab=='staff'">All Staff</button>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Overview Tab -->
+  <div *ngIf="activeTab=='overview'" class="tab-content">
+    <h2>System Overview</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalDoctors }}</div>
+        <div class="stat-label">Total Doctors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalPatients }}</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalStaff }}</div>
+        <div class="stat-label">Total Staff</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalAppointments }}</div>
+        <div class="stat-label">Total Appointments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Approvals Tab -->
+  <div *ngIf="activeTab=='pending'" class="tab-content">
+    <h2>Pending User Approvals</h2>
+    <div *ngIf="loading" class="loading">Loading pending users...</div>
+
+    <div *ngIf="!loading && pendingUsers.length === 0" class="empty-state">No pending approvals</div>
+
+    <div *ngIf="!loading && pendingUsers.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Registered On</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of pendingUsers">
+            <td>{{ user.fullName }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="role-badge">{{ user.role }}</span>
+            </td>
+            <td>{{ user.createdAt ? (user.createdAt | date:'shortDate') : '-' }}</td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(user.status)">{{ user.status }}</span>
+            </td>
+            <td>
+              <button (click)="openApprovalForm(user)" class="btn-small">Review</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Approval Form Modal -->
+    <div *ngIf="selectedUser" class="modal-overlay" (click)="cancelApproval()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Review {{ selectedUser.role }} Registration</h3>
+          <button class="close-btn" (click)="cancelApproval()">×</button>
+        </div>
+        <form [formGroup]="approvalForm" class="modal-body">
+          <div class="user-info">
+            <p><strong>Name:</strong> {{ selectedUser.fullName }}</p>
+            <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+            <p><strong>Role:</strong> {{ selectedUser.role }}</p>
+            <p><strong>Registered:</strong> {{ selectedUser.createdAt | date:'fullDate' }}</p>
+          </div>
+
+          <div class="form-group">
+            <label>Decision:</label>
+            <select formControlName="status" required>
+              <option value="">Select an action</option>
+              <option value="Approved">Approve</option>
+              <option value="Rejected">Reject</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="selectedUser.role === 'Staff' && approvalForm.value.status === 'Approved'">
+            <label>Shift Timing:</label>
+            <select formControlName="shiftTiming" required>
+              <option value="">Select shift timing</option>
+              <option value="9:00 AM - 5:00 PM">Morning (9:00 AM - 5:00 PM)</option>
+              <option value="2:00 PM - 10:00 PM">Afternoon (2:00 PM - 10:00 PM)</option>
+              <option value="10:00 PM - 6:00 AM">Night (10:00 PM - 6:00 AM)</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="approveUser()" class="btn-primary" [disabled]="approvalForm.invalid || loading">
+              {{ loading ? 'Processing...' : 'Confirm' }}
+            </button>
+            <button type="button" (click)="cancelApproval()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Doctors Tab -->
+  <div *ngIf="activeTab=='doctors'" class="tab-content">
+    <h2>All Doctors ({{ doctors.length }})</h2>
+    <div *ngIf="loading" class="loading">Loading doctors...</div>
+
+    <div *ngIf="!loading && doctors.length === 0" class="empty-state">No doctors registered</div>
+
+    <div *ngIf="!loading && doctors.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Specialization</th>
+            <th>Consultation Fee</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doctor of doctors">
+            <td>{{ doctor.user?.fullName || doctor.fullName || doctor.name || 'N/A' }}</td>
+            <td>{{ doctor.specialization || 'N/A' }}</td>
+            <td>₹{{ doctor.consultationFee || 0 }}</td>
+            <td>
+              <button (click)="deleteDoctor(doctor.doctorId)" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- All Patients Tab -->
+  <div *ngIf="activeTab=='patients'" class="tab-content">
+    <h2>All Patients ({{ patients.length }})</h2>
+    <div *ngIf="loading" class="loading">Loading patients...</div>
+
+    <div *ngIf="!loading && patients.length === 0" class="empty-state">No patients registered</div>
+
+    <div *ngIf="!loading && patients.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Registered On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let patient of patients">
+            <td>{{ patient.fullName }}</td>
+            <td>{{ patient.email }}</td>
+            <td>{{ patient.phoneNumber || '-' }}</td>
+            <td>{{ patient.gender || '-' }}</td>
+            <td>{{ patient.createdAt ? (patient.createdAt | date:'shortDate') : '-' }}</td>
+            <td>
+              <button (click)="deleteUser(patient.userId, 'Patient')" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- All Staff Tab -->
+  <div *ngIf="activeTab=='staff'" class="tab-content">
+    <h2>All Staff ({{ staff.length }})</h2>
+    <div *ngIf="loading" class="loading">Loading staff...</div>
+
+    <div *ngIf="!loading && staff.length === 0" class="empty-state">No staff registered</div>
+
+    <div *ngIf="!loading && staff.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Position</th>
+            <th>Department</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let staffMember of staff">
+            <td>{{ staffMember.fullName || 'N/A' }}</td>
+            <td>{{ staffMember.email || 'N/A' }}</td>
+            <td>{{ staffMember.phoneNumber || '-' }}</td>
+            <td>{{ staffMember.position || 'N/A' }}</td>
+            <td>{{ staffMember.department || 'N/A' }}</td>
+            <td>
+              <button (click)="deleteStaff(staffMember.staffId)" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

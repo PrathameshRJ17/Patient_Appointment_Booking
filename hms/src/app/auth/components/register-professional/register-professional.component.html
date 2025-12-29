@@ -1,0 +1,54 @@
+<div class="register-wrapper">
+  <div class="register-card">
+    <h2>Doctor/Staff Registration</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <select formControlName="role">
+        <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+      </select>
+      <input formControlName="fullName" placeholder="Full name" />
+      <span class="validation-error" *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched">
+        Name must be at least 7 characters
+      </span>
+      <input formControlName="email" placeholder="Email" />
+      <span class="validation-error" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+        Enter a valid email
+      </span>
+      <input formControlName="password" type="password" placeholder="Password" />
+      <span class="validation-error" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+        Password must be 12+ characters with uppercase, lowercase and number
+      </span>
+      <input formControlName="phoneNumber" placeholder="Phone (10 digits)" />
+      <span class="validation-error" *ngIf="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
+        Phone must be 10 digits
+      </span>
+      <input *ngIf="form.get('role')?.value === 'Doctor'" formControlName="specialization" placeholder="Specialization" />
+      <span class="validation-error" *ngIf="form.get('role')?.value === 'Doctor' && form.get('specialization')?.invalid && form.get('specialization')?.touched">
+        Specialization is required
+      </span>
+      <input *ngIf="form.get('role')?.value === 'Doctor'" formControlName="qualification" placeholder="Qualification" />
+      <span class="validation-error" *ngIf="form.get('role')?.value === 'Doctor' && form.get('qualification')?.invalid && form.get('qualification')?.touched">
+        Qualification is required
+      </span>
+      <input *ngIf="form.get('role')?.value === 'Doctor'" formControlName="experienceYears" type="number" placeholder="Years of Experience" min="0" />
+      <span class="validation-error" *ngIf="form.get('role')?.value === 'Doctor' && form.get('experienceYears')?.invalid && form.get('experienceYears')?.touched">
+        Experience must be between 0-50 years
+      </span>
+      <select *ngIf="form.get('role')?.value === 'Staff'" formControlName="department">
+        <option value="">Select Department</option>
+        <option value="Reception">Reception</option>
+        <option value="Billing">Billing</option>
+        <option value="Administration">Administration</option>
+        <option value="Nursing">Nursing</option>
+      </select>
+      <span class="validation-error" *ngIf="form.get('role')?.value === 'Staff' && form.get('department')?.invalid && form.get('department')?.touched">
+        Department is required
+      </span>
+      <button type="submit" [disabled]="loading">Submit for approval</button>
+      <p *ngIf="error" class="error">{{ error }}</p>
+    </form>
+    <div class="login-footer">
+      <span>Already have an account?</span>
+      <button type="button" routerLink="/auth/login">Sign In</button>
+    </div>
+  </div>
+</div>

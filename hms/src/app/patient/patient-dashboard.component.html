@@ -1,0 +1,312 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Patient Dashboard</h1>
+  </div>
+
+  <div class="tabs">
+    <button (click)="activeTab='doctors'" [class.active]="activeTab=='doctors'">Available Doctors</button>
+    <button (click)="activeTab='appointments'" [class.active]="activeTab=='appointments'">My Appointments</button>
+    <button (click)="activeTab='profile'" [class.active]="activeTab=='profile'">My Profile</button>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Available Doctors Tab -->
+  <div *ngIf="activeTab=='doctors'" class="tab-content">
+    <h2>Available Doctors</h2>
+    <div *ngIf="loading" class="loading">Loading doctors...</div>
+    <div *ngIf="!loading && doctors.length === 0" class="empty-state">No doctors are available right now. Please check again later.</div>
+
+    <div *ngIf="!loading && doctors.length > 0" class="doctors-grid">
+      <div
+        *ngFor="let doctor of doctors"
+        class="doctor-card"
+        [class.selected]="selectedDoctor?.doctorId === doctor.doctorId"
+        (click)="onDoctorSelected(doctor)"
+      >
+        <div class="doctor-image">
+          <img [src]="'https://ui-avatars.com/api/?name=' + doctorName(doctor) + '&size=120&background=667eea&color=fff&bold=true'" 
+               [alt]="doctorName(doctor)">
+        </div>
+        <div class="doctor-info">
+          <div class="info-row">
+            <span class="info-label">Name -</span>
+            <span class="info-value">{{ doctorName(doctor) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Specialization -</span>
+            <span class="info-value">{{ doctor.specialization || 'General' }}</span>
+          </div>
+        </div>
+        <button type="button" class="btn-book" (click)="onDoctorSelected(doctor); $event.stopPropagation()">
+          <span class="btn-icon">📅</span> Book Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div *ngIf="selectedDoctor" class="booking-form">
+      <h3>Book Appointment with {{ doctorName(selectedDoctor) }}</h3>
+      <div class="selected-doctor-info">
+        <div class="profile-row">
+          <span class="profile-label">Specialization</span>
+          <span class="profile-value">{{ selectedDoctor.specialization }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Consultation Fee</span>
+          <span class="profile-value">₹{{ selectedDoctor.consultationFee }}</span>
+        </div>
+      </div>
+      <form [formGroup]="bookingForm" (ngSubmit)="bookAppointment()">
+        <div class="form-group">
+          <label>Date:</label>
+          <input type="date" formControlName="appointmentDate" [min]="minDate" (change)="onDateChanged($event.target.value)" required>
+        </div>
+
+        <div class="form-group">
+          <label>Time Slot:</label>
+          <select formControlName="timeSlot" required>
+            <option value="">Select a time slot</option>
+            <option *ngFor="let slot of availableSlots" [value]="slot.startTime">{{ slot.display }}</option>
+          </select>
+          <div class="slot-info" *ngIf="slotsLoading">Loading slots...</div>
+          <div class="slot-info empty" *ngIf="!slotsLoading && slotsLoaded && !availableSlots.length">No slots available. Please choose another date.</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="bookingForm.invalid || loading || slotsLoading || bookingForm.get('timeSlot')?.disabled">
+            {{ loading ? 'Booking...' : 'Confirm Booking' }}
+          </button>
+          <button type="button" (click)="startBooking()" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- My Appointments Tab -->
+  <div *ngIf="activeTab=='appointments'" class="tab-content">
+    <h2>My Appointments</h2>
+    <div *ngIf="appointments.length === 0" class="empty-state">
+      <div class="empty-icon">📅</div>
+      <p>No appointments yet</p>
+    </div>
+    
+    <div *ngIf="appointments.length > 0" class="appointments-grid">
+      <ng-container *ngFor="let apt of appointments">
+        <div class="appointment-alert-banner" *ngIf="getAvailabilityAlert(apt.appointmentId)">
+          <span class="alert-icon">⚠️</span>
+          <strong>Doctor Availability Update:</strong> Dr. {{ apt.doctorName }} is currently {{ getAvailabilityAlert(apt.appointmentId) }}
+        </div>
+        <div class="appointment-card" 
+             [class.selected]="selectedAppointment?.appointmentId === apt.appointmentId"
+             (click)="viewAppointmentDetails(apt)">
+          <div class="appointment-header">
+            <div class="appointment-id">Appointment #{{ apt.appointmentId }}</div>
+            <span class="status-badge" [class]="statusClass(apt)">{{ apt.statusText }}</span>
+          </div>
+          <div class="appointment-body">
+            <div class="appointment-info">
+              <div class="info-item">
+                <span class="info-icon">👨‍⚕️</span>
+                <div>
+                  <div class="info-label">Doctor</div>
+                  <div class="info-text">{{ apt.doctorName }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">📅</span>
+                <div>
+                  <div class="info-label">Date</div>
+                  <div class="info-text">{{ apt.appointmentDate | date:'MMM d, y' }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">🕐</span>
+                <div>
+                  <div class="info-label">Time</div>
+                  <div class="info-text">{{ apt.timeSlotDisplay || apt.timeSlot }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">💰</span>
+                <div>
+                  <div class="info-label">Amount</div>
+                  <div class="info-text">
+                    <ng-container *ngIf="billFor(apt.appointmentId) as bill; else showFee">
+                      ₹{{ bill.totalAmount }}
+                    </ng-container>
+                    <ng-template #showFee>
+                      <ng-container *ngIf="getDoctorFee(apt.doctorId) as fee; else noBill">
+                        ₹{{ fee }}
+                      </ng-container>
+                    </ng-template>
+                    <ng-template #noBill>-</ng-template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="appointment-actions">
+            <button class="btn-view" (click)="viewAppointmentDetails(apt); $event.stopPropagation()">
+              <span>👁️</span> View Details
+            </button>
+            <button class="btn-download" *ngIf="billFor(apt.appointmentId) && isCompleted(apt)" 
+                    (click)="downloadBill(apt.appointmentId); $event.stopPropagation()">
+              <span>📥</span> Download Bill
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Appointment Details Modal -->
+    <div *ngIf="selectedAppointment as appointment" class="modal-overlay" (click)="closeAppointmentDetails()">
+      <div class="modal-content appointment-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Appointment Details</h3>
+            <p class="modal-subtitle">ID: #{{ appointment.appointmentId }}</p>
+          </div>
+          <button class="close-btn" (click)="closeAppointmentDetails()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-icon">👨‍⚕️</span>
+              <div>
+                <div class="detail-label">Doctor</div>
+                <div class="detail-value">{{ appointment.doctorName || 'N/A' }}</div>
+              </div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">📅</span>
+              <div>
+                <div class="detail-label">Date</div>
+                <div class="detail-value">{{ appointment.appointmentDate | date:'fullDate' }}</div>
+              </div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🕐</span>
+              <div>
+                <div class="detail-label">Time Slot</div>
+                <div class="detail-value">{{ appointment.timeSlotDisplay || appointment.timeSlot || 'N/A' }}</div>
+              </div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">📊</span>
+              <div>
+                <div class="detail-label">Status</div>
+                <div><span class="status-badge" [class]="statusClass(appointment)">{{ appointment.statusText || 'N/A' }}</span></div>
+              </div>
+            </div>
+            <div class="detail-item" *ngIf="appointment.symptoms">
+              <span class="detail-icon">🩺</span>
+              <div>
+                <div class="detail-label">Symptoms</div>
+                <div class="detail-value">{{ appointment.symptoms }}</div>
+              </div>
+            </div>
+            <div class="detail-item" *ngIf="appointment.remarks">
+              <span class="detail-icon">📝</span>
+              <div>
+                <div class="detail-label">Remarks</div>
+                <div class="detail-value">{{ appointment.remarks }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bill-section" *ngIf="billFor(appointment.appointmentId) as bill">
+            <h4>💰 Bill Information</h4>
+            <div class="bill-summary">
+              <div class="bill-item">
+                <span class="bill-label">Bill ID:</span>
+                <span class="bill-value">{{ bill.billId }}</span>
+              </div>
+              <div class="bill-item">
+                <span class="bill-label">Total Amount:</span>
+                <span class="bill-value amount">₹{{ bill.totalAmount }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-download-modal" *ngIf="billFor(appointment.appointmentId) && isCompleted(appointment)" 
+                  (click)="downloadBill(appointment.appointmentId)">
+            <span>📥</span> Download Bill
+          </button>
+          <button class="btn-close-modal" (click)="closeAppointmentDetails()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Profile Tab -->
+  <div *ngIf="activeTab=='profile'" class="tab-content">
+    <h2>My Profile</h2>
+    <div *ngIf="userProfile" class="profile-container">
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img [src]="'https://ui-avatars.com/api/?name=' + userProfile.fullName + '&size=120&background=667eea&color=fff&bold=true'" 
+                 [alt]="userProfile.fullName">
+          </div>
+          <div class="profile-info">
+            <h3>{{ userProfile.fullName }}</h3>
+            <p class="profile-email">{{ userProfile.email }}</p>
+          </div>
+        </div>
+
+        <div class="profile-body">
+          <div *ngIf="!editMode" class="profile-view">
+            <div class="profile-field">
+              <span class="field-label">Full Name</span>
+              <span class="field-value">{{ userProfile.fullName || '-' }}</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Email</span>
+              <span class="field-value read-only">{{ userProfile.email || '-' }}</span>
+              <span class="field-hint">(Read-only)</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Phone Number</span>
+              <span class="field-value">{{ userProfile.phoneNumber || '-' }}</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Gender</span>
+              <span class="field-value read-only">{{ userProfile.gender || '-' }}</span>
+              <span class="field-hint">(Read-only)</span>
+            </div>
+            <button class="btn-edit" (click)="toggleEditMode()">
+              <span>✏️</span> Edit Profile
+            </button>
+          </div>
+
+          <form *ngIf="editMode" [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-edit">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" formControlName="fullName" required>
+            </div>
+            <div class="form-group">
+              <label>Email (Read-only)</label>
+              <input type="email" [value]="userProfile.email" disabled>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" formControlName="phoneNumber">
+            </div>
+            <div class="form-group">
+              <label>Gender (Read-only)</label>
+              <input type="text" [value]="userProfile.gender" disabled>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-save" [disabled]="profileForm.invalid || loading">
+                {{ loading ? '💾 Saving...' : '💾 Save Changes' }}
+              </button>
+              <button type="button" class="btn-cancel" (click)="toggleEditMode()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

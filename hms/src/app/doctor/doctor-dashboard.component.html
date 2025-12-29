@@ -1,0 +1,146 @@
+<div class="dashboard-container">
+  <h1>Doctor Dashboard</h1>
+
+  <div class="tabs">
+    <button (click)="activeTab='appointments'" [class.active]="activeTab=='appointments'">My Appointments</button>
+    <button (click)="activeTab='profile'" [class.active]="activeTab=='profile'">My Profile</button>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Appointments Tab -->
+  <div *ngIf="activeTab=='appointments'" class="tab-content">
+    <h2>My Appointments</h2>
+    <div *ngIf="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading appointments...</p>
+    </div>
+
+    <div *ngIf="!loading && appointments.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>No appointments scheduled</p>
+    </div>
+
+    <div *ngIf="!loading && appointments.length > 0" class="appointments-grid">
+      <div *ngFor="let apt of appointments" class="appointment-card">
+        <div class="card-header">
+          <div class="patient-info">
+            <div class="patient-avatar">
+              <img [src]="'https://ui-avatars.com/api/?name=' + apt.patientName + '&size=60&background=667eea&color=fff&bold=true'" 
+                   [alt]="apt.patientName">
+            </div>
+            <div>
+              <h3>{{ apt.patientName }}</h3>
+              <span class="appointment-id">ID: #{{ apt.appointmentId }}</span>
+            </div>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(apt.statusText || apt.status)">{{ apt.statusText || apt.status }}</span>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-icon">📅</span>
+              <div>
+                <div class="info-label">Date</div>
+                <div class="info-value">{{ apt.appointmentDate | date:'MMM d, y' }}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">🕐</span>
+              <div>
+                <div class="info-label">Time</div>
+                <div class="info-value">{{ apt.timeSlotDisplay || apt.timeSlot }}</div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="apt.remarks" class="remarks-section">
+            <div class="remarks-label">📝 Remarks:</div>
+            <div class="remarks-text">{{ apt.remarks }}</div>
+          </div>
+          <div *ngIf="(apt.statusText || apt.status) === 'Approved'" class="card-actions">
+            <button (click)="openRemarksForm(apt)" class="btn-add-remarks">
+              <span>✅</span> Mark as Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remarks Form Modal -->
+    <div *ngIf="selectedAppointment as appointment" class="modal-overlay" (click)="cancelRemarks()">
+      <div class="modal-content fancy-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Mark Appointment as Done</h3>
+            <p class="modal-subtitle">For {{ appointment.patientName }}</p>
+          </div>
+          <button class="close-btn" (click)="cancelRemarks()">×</button>
+        </div>
+        <form [formGroup]="remarksForm" (ngSubmit)="addRemarks()">
+          <div class="modal-body">
+            <div class="form-group">
+              <label>📝 Remarks:</label>
+              <textarea formControlName="remarks" rows="5" placeholder="Enter consultation remarks..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn-save" [disabled]="remarksForm.invalid || loading">
+              {{ loading ? '✅ Marking...' : '✅ Mark as Done' }}
+            </button>
+            <button type="button" (click)="cancelRemarks()" class="btn-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div *ngIf="activeTab=='profile'" class="tab-content">
+    <h2>My Profile</h2>
+    <div *ngIf="doctorInfo" class="profile-section">
+      <div class="profile-details">
+        <div class="detail-row">
+          <span class="detail-label">Doctor Name:</span>
+          <span class="detail-value">{{ doctorInfo.fullName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Specialization:</span>
+          <span class="detail-value">{{ doctorInfo.specialization }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Qualification:</span>
+          <span class="detail-value">{{ doctorInfo.qualification }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Experience Years:</span>
+          <span class="detail-value">{{ doctorInfo.experienceYears }} years</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Consultation Fee:</span>
+          <span class="detail-value">₹{{ doctorInfo.consultationFee }}</span>
+        </div>
+
+      </div>
+
+      <button (click)="editMode = !editMode" class="btn-edit">
+        {{ editMode ? 'Cancel Edit' : 'Edit Profile' }}
+      </button>
+
+      <form *ngIf="editMode" [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+        <div class="form-group">
+          <label>Experience Years:</label>
+          <input type="number" formControlName="experienceYears" required min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Consultation Fee (₹):</label>
+          <input type="number" formControlName="consultationFee" required min="0">
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="profileForm.invalid || loading">
+          {{ loading ? 'Updating...' : 'Update Profile' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

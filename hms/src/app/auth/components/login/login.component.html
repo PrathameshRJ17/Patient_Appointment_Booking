@@ -1,0 +1,15 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2>Sign in</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <input formControlName="email" placeholder="Email" />
+      <input formControlName="password" type="password" placeholder="Password" />
+      <button type="submit" [disabled]="loading">Login</button>
+      <p *ngIf="error" class="error">{{ error }}</p>
+    </form>
+    <div class="register-footer">
+      <span>Create Your Account</span>
+      <button type="button" routerLink="/auth/register">Register</button>
+    </div>
+  </div>
+</div>

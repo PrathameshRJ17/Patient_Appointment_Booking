@@ -1,0 +1,13 @@
+<nav class="navbar">
+  <a class="brand" routerLink="/">Karma Hospital</a>
+  <div class="spacer"></div>
+
+  <ng-container *ngIf="!isLoggedIn(); else logged">
+    <button type="button" class="register-pro" routerLink="/auth/register/pro">Register Staff/Doctor</button>
+  </ng-container>
+
+  <ng-template #logged>
+    <span class="role">Role: {{ role }}</span>
+    <button class="logout" (click)="logout()">Logout</button>
+  </ng-template>
+</nav>
