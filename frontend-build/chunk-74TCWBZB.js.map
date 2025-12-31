@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/components/unauthorized.component.ts"],
+  "sourcesContent": ["import { Component } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-unauthorized',\r\n  standalone: true,\r\n  template: `\r\n    <div style=\"padding: 2rem; text-align: center;\">\r\n      <h2>Access Denied</h2>\r\n      <p>You do not have permission to access this page.</p>\r\n    </div>\r\n  `\r\n})\r\nexport class UnauthorizedComponent {}\r\n"],
+  "mappings": ";;;;;;;;;;;AAYM,IAAO,wBAAP,MAAO,uBAAqB;;qCAArB,wBAAqB;EAAA;yEAArB,wBAAqB,WAAA,CAAA,CAAA,kBAAA,CAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,WAAA,QAAA,cAAA,QAAA,CAAA,GAAA,UAAA,SAAA,+BAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;AAN9B,MAAA,4BAAA,GAAA,OAAA,CAAA,EAAgD,GAAA,IAAA;AAC1C,MAAA,iBAAA,GAAA,eAAA;AAAa,MAAA,0BAAA;AACjB,MAAA,4BAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,GAAA,iDAAA;AAA+C,MAAA,0BAAA,EAAI;;;;;sEAI/C,uBAAqB,CAAA;UAVjC;WAAU;MACT,UAAU;MACV,YAAY;MACZ,UAAU;;;;;;KAMX;;;;6EACY,uBAAqB,EAAA,WAAA,yBAAA,UAAA,qDAAA,YAAA,GAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}
