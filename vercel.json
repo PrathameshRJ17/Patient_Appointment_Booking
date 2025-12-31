@@ -1,6 +1,10 @@
 {
   "routes": [
     {
+      "src": "/(.*\\.(js|css|ico|map))$",
+      "dest": "/frontend-build/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend-build/index.html"
     }
