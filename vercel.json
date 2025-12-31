@@ -1,17 +1,8 @@
 {
-  "builds": [
-    {
-      "src": "hms/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/hms/browser"
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/frontend-build/index.html"
     }
   ]
 }
