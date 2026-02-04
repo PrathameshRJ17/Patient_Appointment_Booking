@@ -1,17 +1,6 @@
-
 {
   "version": 2,
   "name": "pulse-hospital-frontend",
-
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "outputDirectory": "dist/hms/browser"
-      }
-    }
-  ],
 
   "rewrites": [
     {
@@ -20,4 +9,3 @@
     }
   ]
 }
-
