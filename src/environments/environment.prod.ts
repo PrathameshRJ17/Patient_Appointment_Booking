@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://patientappointmentbooking.runasp.net/api'
+  apiUrl: 'https://patientappointmentbooking.runasp.net/api'
 };
