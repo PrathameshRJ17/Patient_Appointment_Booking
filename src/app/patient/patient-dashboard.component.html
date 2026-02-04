@@ -1,0 +1,673 @@
+<!-- About Us Landing Page -->
+<div *ngIf="!showDashboard" class="landing-page">
+  <div class="about-section">
+    <div class="hero-banner">
+      <div class="hero-content">
+        <h1>Pulse Pharma - Your Health, Our Priority</h1>
+        <p>Leading healthcare provider committed to delivering world-class medical services with compassion and excellence.</p>
+        
+        <button (click)="showDashboard = true" class="btn-get-started">
+          Get Started
+        </button>
+      </div>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="card-icon"></div>
+        <h3>Our Mission</h3>
+        <p>To provide accessible, affordable, and quality healthcare services to all patients while maintaining the highest standards of medical excellence.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="card-icon"></div>
+        <h3>Our Vision</h3>
+        <p>To be the most trusted healthcare partner, transforming lives through innovative medical solutions and compassionate care.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="card-icon"></div>
+        <h3>Our Values</h3>
+        <p>Integrity, Excellence, Compassion, Innovation, and Patient-Centric Care guide everything we do.</p>
+      </div>
+    </div>
+
+    <div class="services-section">
+      <h2>Our Services</h2>
+      <div class="services-grid">
+        <div class="service-item">
+          <div class="service-icon">👨⚕️</div>
+          <h4>Expert Doctors</h4>
+          <p>Qualified specialists across all medical fields</p>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">📱</div>
+          <h4>Telemedicine</h4>
+          <p>Online consultations from the comfort of your home</p>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">🏥</div>
+          <h4>24/7 Emergency</h4>
+          <p>Round-the-clock emergency medical services</p>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">🔬</div>
+          <h4>Diagnostics</h4>
+          <p>Advanced diagnostic and laboratory services</p>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">💊</div>
+          <h4>Pharmacy</h4>
+          <p>In-house pharmacy with genuine medications</p>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">📊</div>
+          <h4>Health Records</h4>
+          <p>Digital health records and appointment management</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="specialties-section">
+      <h2>Medical Specialties</h2>
+      <div class="specialties-grid">
+        <div class="specialty-tag">❤️ Cardiology</div>
+        <div class="specialty-tag">🧠 Neurology</div>
+        <div class="specialty-tag">🦴 Orthopedics</div>
+        <div class="specialty-tag">👶 Pediatrics</div>
+        <div class="specialty-tag">🤰 Gynecology</div>
+        <div class="specialty-tag">👁️ Ophthalmology</div>
+        <div class="specialty-tag">🧴 Dermatology</div>
+        <div class="specialty-tag">🧠 Psychiatry</div>
+        <div class="specialty-tag">👂 ENT</div>
+        <div class="specialty-tag">🥵 Gastroenterology</div>
+        <div class="specialty-tag">💪 Physiotherapy</div>
+        <div class="specialty-tag">🩸 Radiology</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h2>Our Impact</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">Hospitals</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">500+</div>
+          <div class="stat-label">Expert Doctors</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">10,000+</div>
+          <div class="stat-label">Happy Patients</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Emergency Care</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-section">
+      <h2>Contact Us</h2>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <div class="contact-icon"></div>
+          <h4>Emergency Helpline</h4>
+          <p>+91-911-PULSE-HELP</p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"></div>
+          <h4>Email Support</h4>
+          <p>support@pulsepharma.com</p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"></div>
+          <h4>Head Office</h4>
+          <p>Pulse Pharma Complex, Medical District, Healthcare City</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div *ngIf="showDashboard" class="dashboard-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Patient Portal</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <button (click)="activeTab='hospitals'" [class.active]="activeTab=='hospitals'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Find Hospitals & Doctors</span>
+      </button>
+      <button (click)="activeTab='appointments'" [class.active]="activeTab=='appointments'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">My Appointments</span>
+      </button>
+      <button (click)="activeTab='profile'" [class.active]="activeTab=='profile'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">My Profile</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button (click)="showDashboard = false" class="btn-back-home">
+        ← Back to Home
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-wrapper">
+      <div class="content-header">
+        <h1>{{ activeTab === 'hospitals' ? 'Find Hospitals & Doctors' : activeTab === 'appointments' ? 'My Appointments' : 'My Profile' }}</h1>
+      </div>
+
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <!-- Find Hospitals Window -->
+    <div *ngIf="activeTab=='hospitals'" class="tab-content">
+      <div class="hospital-search-form">
+        <h2>Find Healthcare Facilities & Doctors</h2>
+        <p class="search-description">Search for nearby hospitals and doctors based on your location and symptoms.</p>
+        
+        <div class="search-form">
+          <!-- Symptom Search Section -->
+          <div class="symptom-search-section">
+            <h3>Describe Your Symptoms (Optional)</h3>
+            <div class="form-group">
+              <label>What symptoms are you experiencing?</label>
+              <textarea [(ngModel)]="searchSymptoms" 
+                       placeholder="e.g., headache, fever, chest pain, back pain, skin rash, stomach ache, etc."
+                       rows="3"
+                       class="symptoms-input"></textarea>
+              <small class="input-help">Describe your symptoms to get better doctor recommendations</small>
+            </div>
+          </div>
+          
+          <!-- Location Search Section -->
+          <div class="location-search-section">
+            <h3>Your Location</h3>
+            <div class="location-options">
+              <button (click)="enableGeolocation()" class="btn-geolocation" [disabled]="loading">
+                Use My Location
+              </button>
+              <span class="or-divider">OR</span>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Address Line</label>
+                <input type="text" [(ngModel)]="patientLocation.address" placeholder="Enter your address" [disabled]="useGeolocation">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Your City</label>
+                <select [(ngModel)]="patientLocation.city" [disabled]="useGeolocation">
+                  <option value="">Select your city</option>
+                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Your State</label>
+                <select [(ngModel)]="patientLocation.state" (change)="onStateChange()" [disabled]="useGeolocation">
+                  <option value="">Select your state</option>
+                  <option *ngFor="let state of states" [value]="state">{{ state }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>ZIP Code</label>
+                <input type="text" [(ngModel)]="patientLocation.zipCode" placeholder="Enter ZIP code" [disabled]="useGeolocation">
+              </div>
+            </div>
+            
+            <div *ngIf="useGeolocation && userCoordinates" class="geolocation-info">
+              Using your current location to find nearby hospitals
+              <button (click)="disableGeolocation()" class="btn-disable-geo">Use Manual Entry</button>
+            </div>
+            
+            <div class="form-group">
+              <label>Search Radius</label>
+              <select [(ngModel)]="radiusKm" [disabled]="useGeolocation">
+                <option value="10">Within 10 km</option>
+                <option value="25">Within 25 km</option>
+                <option value="50">Within 50 km</option>
+                <option value="100">Within 100 km</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="search-buttons">
+            <button (click)="searchHospitals()" class="btn-search" [disabled]="(!useGeolocation && (!patientLocation.city || !patientLocation.state)) || loading">
+              {{ loading ? 'Searching...' : 'Search Hospitals & Doctors' }}
+            </button>
+            
+            <button *ngIf="searchSymptoms.trim()" (click)="searchDoctorsBySymptoms()" class="btn-search-symptoms" [disabled]="loadingSymptomDoctors">
+              {{ loadingSymptomDoctors ? 'Searching...' : 'Find Doctors by Symptoms Only' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="loading-section">
+        <div class="loading-spinner"></div>
+        <p>Searching hospitals...</p>
+      </div>
+      
+      <div *ngIf="!loading && hospitals.length === 0 && (patientLocation.city || patientLocation.state)" class="no-results">
+        <div class="no-results-icon"></div>
+        <h3>No Hospitals Found</h3>
+        <p>No hospitals found in your area. Try searching in nearby cities.</p>
+      </div>
+
+      <div *ngIf="!loading && hospitals.length > 0" class="hospitals-results">
+        <div class="results-header">
+          <h3>{{ useGeolocation ? 'Nearby Hospitals' : 'Nearby Hospitals' }} ({{ hospitals.length }})</h3>
+          <p *ngIf="useGeolocation">Showing hospitals within 10km of your current location</p>
+          <p *ngIf="!useGeolocation">Showing hospitals within {{radiusKm}}km of {{ patientLocation.address ? patientLocation.address + ', ' : '' }}{{ patientLocation.city }}{{ patientLocation.state ? ', ' + patientLocation.state : '' }}</p>
+        </div>
+        
+        <div class="hospitals-grid">
+          <div *ngFor="let hospital of hospitals" class="hospital-card" (click)="selectHospital(hospital)">
+            <div class="hospital-main">
+              <div class="hospital-name">
+                <h4>{{ hospital.name }}</h4>
+              </div>
+              
+              <div class="hospital-details">
+                <div class="detail-item">
+                  <span class="detail-icon"></span>
+                  <span class="detail-text">{{ hospital.address }}, {{ hospital.city }}, {{ hospital.state }}</span>
+                </div>
+                
+                <div class="detail-item" *ngIf="hospital.distance">
+                  <span class="detail-icon"></span>
+                  <span class="detail-text">{{ hospital.distance | number:'1.1-1' }} km away</span>
+                </div>
+                
+                <div class="detail-item">
+                  <span class="detail-icon"></span>
+                  <span class="detail-text">{{ hospital.phoneNumber }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="hospital-action">
+              <button class="btn-view-doctors">
+                <span class="btn-text">View Doctors</span>
+                <span class="btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Symptom-based Doctors Results -->
+      <div *ngIf="!loadingSymptomDoctors && symptomDoctors.length > 0" class="symptom-doctors-results">
+        <div class="results-header">
+          <h3>Doctors Matching Your Symptoms ({{ symptomDoctors.length }})</h3>
+          <p>Doctors are ranked by relevance to your symptoms: "{{ searchSymptoms }}"</p>
+        </div>
+        
+        <div class="doctors-grid">
+          <div *ngFor="let doctor of symptomDoctors" class="doctor-card-modern" (click)="selectSymptomDoctor(doctor)">
+            <div class="doctor-header">
+              <div class="doctor-image">
+                <img *ngIf="doctor.profilePictureUrl" [src]="doctor.profilePictureUrl" [alt]="doctor.fullName" class="doctor-photo">
+                <div *ngIf="!doctor.profilePictureUrl" class="doctor-avatar-placeholder">
+                  <span class="avatar-initials">{{ (doctor.fullName || doctor.name)?.charAt(0) || 'D' }}</span>
+                </div>
+              </div>
+              <div class="doctor-status">
+                <span class="availability-badge" [class.available]="doctor.availability === 'Available'" [class.busy]="doctor.availability !== 'Available'">
+                  {{ doctor.availability || 'Available' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="doctor-content">
+              <h4 class="doctor-name">Dr. {{ doctor.fullName || doctor.name }}</h4>
+              <p class="doctor-specialization">{{ doctor.specialization }}</p>
+              <p class="doctor-hospital">{{ doctor.hospitalName }}</p>
+              
+              <div class="doctor-symptoms" *ngIf="doctor.treatedConditionsArray && doctor.treatedConditionsArray.length > 0">
+                <span class="symptoms-label">Treats:</span>
+                <div class="symptoms-dropdown">
+                  <select class="symptoms-select" (change)="onSymptomSelected($event)">
+                    <option value="">Select a condition...</option>
+                    <option *ngFor="let condition of doctor.treatedConditionsArray" [value]="condition">
+                      {{ condition }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="doctor-details">
+                <div class="detail-item">
+                  <span class="detail-icon"></span>
+                  <span class="detail-text">{{ doctor.experienceYears }} years exp.</span>
+                </div>
+                <div class="detail-item" *ngIf="doctor.qualification">
+                  <span class="detail-icon"></span>
+                  <span class="detail-text">{{ doctor.qualification }}</span>
+                </div>
+              </div>
+              
+              <div class="doctor-fees">
+                <div class="fee-card">
+                  <span class="fee-type">In-Person</span>
+                  <span class="fee-amount">₹{{ doctor.faceToFaceFee }}</span>
+                </div>
+                <div class="fee-card">
+                  <span class="fee-type">Online</span>
+                  <span class="fee-amount">₹{{ doctor.telemedicineFee }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="doctor-footer">
+              <button class="btn-book-modern">
+                <span class="btn-icon"></span>
+                <span class="btn-text">Book Appointment</span>
+                <span class="btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Hospital Doctors -->
+      <div *ngIf="selectedHospital" class="doctors-section">
+        <div class="doctors-header">
+          <div class="hospital-info-banner">
+            <div class="banner-content">
+              <h3>{{ selectedHospital.name }}</h3>
+              <p class="hospital-address">{{ selectedHospital.address }}, {{ selectedHospital.city }}, {{ selectedHospital.state }}</p>
+            </div>
+            <button class="btn-back-to-hospitals" (click)="selectedHospital = null">
+              <span>←</span> Back to Hospitals
+            </button>
+          </div>
+        </div>
+        
+        <div *ngIf="loadingDoctors" class="loading-section">
+          <div class="loading-spinner"></div>
+          <p>Loading doctors...</p>
+        </div>
+        
+        <div *ngIf="!loadingDoctors && hospitalDoctors.length === 0" class="no-doctors">
+          <div class="no-doctors-icon"></div>
+          <h3>No Available Doctors</h3>
+          <p>No doctors are currently available at this hospital.</p>
+        </div>
+
+        <div *ngIf="!loadingDoctors && hospitalDoctors.length > 0" class="doctors-list">
+          <div class="doctors-list-header">
+            <h3>Available Doctors ({{ hospitalDoctors.length }})</h3>
+          </div>
+          
+          <div class="doctors-grid">
+            <div *ngFor="let doctor of hospitalDoctors" class="doctor-card-modern" (click)="selectDoctor(doctor)">
+              <div class="doctor-header">
+                <div class="doctor-image">
+                  <img *ngIf="doctor.profilePictureUrl" [src]="doctor.profilePictureUrl" [alt]="doctor.doctorName" class="doctor-photo">
+                  <div *ngIf="!doctor.profilePictureUrl" class="doctor-avatar-placeholder">
+                    <span class="avatar-initials">{{ doctor.doctorName?.charAt(0) || 'D' }}</span>
+                  </div>
+                </div>
+                <div class="doctor-status">
+                  <span class="availability-badge" [class.available]="doctor.availability === 'Available'" [class.busy]="doctor.availability !== 'Available'">
+                    {{ doctor.availability || 'Available' }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="doctor-content">
+                <h4 class="doctor-name">Dr. {{ doctor.doctorName }}</h4>
+                <p class="doctor-specialization">{{ doctor.specialization }}</p>
+                <div class="doctor-details">
+                  <div class="detail-item">
+                    <span class="detail-icon"></span>
+                    <span class="detail-text">{{ doctor.experienceYears }} years exp.</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-icon"></span>
+                    <span class="detail-text">{{ doctor.qualification }}</span>
+                  </div>
+                </div>
+                
+                <div class="doctor-symptoms" *ngIf="doctor.treatedConditionsArray && doctor.treatedConditionsArray.length > 0">
+                  <span class="symptoms-label">Treats:</span>
+                  <div class="symptoms-dropdown">
+                    <select [(ngModel)]="selectedSymptomForBooking" (ngModelChange)="onSymptomSelected($event)" class="symptoms-select">
+                      <option value="">Select a condition...</option>
+                      <option *ngFor="let condition of doctor.treatedConditionsArray" [value]="condition">
+                        {{ condition }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="doctor-fees">
+                  <div class="fee-card">
+                    <span class="fee-type">In-Person</span>
+                    <span class="fee-amount">₹{{ doctor.faceToFaceFee }}</span>
+                  </div>
+                  <div class="fee-card">
+                    <span class="fee-type">Online</span>
+                    <span class="fee-amount">₹{{ doctor.telemedicineFee }}</span>
+                  </div>
+                </div>
+                
+                <div class="slots-preview" *ngIf="doctor.availableSlots && doctor.availableSlots.length > 0">
+                  <span class="slots-label">Available Today:</span>
+                  <div class="slots-count">{{ doctor.availableSlots.length }} slots</div>
+                </div>
+                
+                <div class="slots-preview" *ngIf="!doctor.availableSlots || doctor.availableSlots.length === 0">
+                  <span class="slots-label">Available Today:</span>
+                  <div class="slots-count">Check slots for booking</div>
+                </div>
+              </div>
+              
+              <div class="doctor-footer">
+                <button class="btn-book-modern">
+                  <span class="btn-icon"></span>
+                  <span class="btn-text">Book Appointment</span>
+                  <span class="btn-arrow">→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booking Form -->
+      <div *ngIf="selectedDoctor" class="booking-modal">
+        <div class="modal-overlay" (click)="selectedDoctor = null">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Book Appointment</h3>
+              <button class="close-btn" (click)="selectedDoctor = null">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="doctor-summary">
+                <h4>{{ selectedDoctor.doctorName }}</h4>
+                <p>{{ selectedDoctor.specialization }} • {{ selectedHospital?.name }}</p>
+              </div>
+              
+              <form [formGroup]="bookingForm" (ngSubmit)="bookAppointment()">
+                <div class="form-group">
+                  <label>Appointment Mode</label>
+                  <select formControlName="mode" required>
+                    <option value="0">Face-to-Face (₹{{ selectedDoctor.faceToFaceFee }})</option>
+                    <option value="1">Telemedicine (₹{{ selectedDoctor.telemedicineFee }})</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label>Preferred Date (Working Days Only)</label>
+                  <input type="date" formControlName="appointmentDate" [min]="minDate" [max]="getMaxDate()" (change)="loadAvailableSlots()" required>
+                  <small class="date-info">Appointments available Monday-Friday, up to 2 weeks in advance</small>
+                </div>
+                
+                <div class="form-group" *ngIf="availableSlots.length > 0">
+                  <label>Available Time Slots</label>
+                  <div class="slots-grid">
+                    <button type="button" 
+                            *ngFor="let slot of getAvailableSlots()" 
+                            class="slot-btn" 
+                            [class.selected]="selectedSlot && selectedSlot.startTime === slot.startTime"
+                            (click)="selectSlot(slot)">
+                      {{ slot.startTime }} - {{ slot.endTime }}
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="form-group" *ngIf="bookingForm.get('appointmentDate')?.value && availableSlots.length === 0 && !loading">
+                  <div class="no-slots">No available slots for this date. Please choose another date.</div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Symptoms</label>
+                  <div *ngIf="selectedSymptomForBooking" class="selected-symptom">
+                    <span class="symptom-tag">{{ selectedSymptomForBooking }}</span>
+                    <button type="button" class="btn-clear-symptom" (click)="clearSelectedSymptom()">×</button>
+                  </div>
+                  <textarea formControlName="symptoms" 
+                           [placeholder]="selectedSymptomForBooking ? 'Add additional symptoms if needed...' : 'Describe your symptoms...'"></textarea>
+                  <small class="form-help">{{ selectedSymptomForBooking ? 'You can add more symptoms or modify the selected one above.' : 'Describe your symptoms to help the doctor prepare for your consultation.' }}</small>
+                </div>
+                
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary" [disabled]="bookingForm.invalid || !selectedSlot || loading">
+                    {{ loading ? 'Booking...' : 'Book Appointment' }}
+                  </button>
+                  <button type="button" class="btn-secondary" (click)="selectedDoctor = null">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Appointments Window -->
+    <div *ngIf="activeTab=='appointments'" class="tab-content">
+      <h2>My Appointments</h2>
+      <div *ngIf="appointments.length === 0" class="empty-state">
+        <div class="empty-icon"></div>
+        <p>No appointments yet</p>
+      </div>
+      
+      <div *ngIf="!loading && appointments.length > 0" class="appointments-list">
+        <div *ngFor="let appointment of appointments" class="appointment-card">
+          <div *ngIf="getStatusText(appointment.status) === 'Rescheduled' && appointment.remarks" class="reschedule-alert-banner">
+            <span class="alert-icon"></span>
+            <div>
+              <strong>Appointment Rescheduled by Doctor</strong>
+              <p style="margin: 5px 0 0 0; font-size: 0.9em;">Reason: {{ appointment.remarks }}</p>
+            </div>
+          </div>
+          <div class="appointment-header">
+            <div class="appointment-id">#{{ appointment.appointmentId }}</div>
+            <span class="status-badge" [class]="getStatusClass(appointment.status)">{{ getStatusText(appointment.status) }}</span>
+          </div>
+          <div class="appointment-body">
+            <div class="appointment-info">
+              <div class="info-row">
+                <span class="label">Hospital:</span>
+                <span class="value">{{ appointment.hospitalName || 'Unknown Hospital' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Doctor:</span>
+                <span class="value">{{ appointment.doctorName }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Date:</span>
+                <span class="value">{{ appointment.appointmentDate | date:'mediumDate' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Time:</span>
+                <span class="value">{{ appointment.slotTime || 'Not specified' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Mode:</span>
+                <span class="value">{{ appointment.mode === 0 ? 'Face-to-Face' : 'Telemedicine' }}</span>
+              </div>
+              <div class="info-row" *ngIf="appointment.mode === 1 && getStatusText(appointment.status) === 'Confirmed' && appointment.doctorPhone">
+                <span class="label">Doctor's Phone:</span>
+                <span class="value doctor-phone">{{ appointment.doctorPhone }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Fee:</span>
+                <span class="value">₹{{ appointment.feeAmount }}</span>
+              </div>
+              <div class="info-row" *ngIf="appointment.hasPrescription && (getStatusText(appointment.status) === 'Completed' || getStatusText(appointment.status) === 'Done')">
+                <span class="label">Prescription:</span>
+                <button class="btn-download-prescription" (click)="downloadPrescription(appointment.appointmentId)">
+                  Download PDF
+                </button>
+              </div>
+            </div>
+            <div class="appointment-actions" *ngIf="appointment.status === 1 || appointment.status === 2">
+              <button class="btn-cancel" (click)="cancelAppointment(appointment.appointmentId)" [disabled]="loading">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Profile Window -->
+    <div *ngIf="activeTab=='profile'" class="tab-content">
+      <h2>My Profile</h2>
+      <div *ngIf="userProfile" class="profile-container">
+        <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" formControlName="fullName" required>
+          </div>
+          <div class="form-group">
+            <label>Email (Read-only)</label>
+            <input type="email" [value]="userProfile.email" disabled>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" formControlName="phoneNumber">
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="address" placeholder="Your address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" formControlName="city" placeholder="Your city">
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <select formControlName="state">
+                <option value="">Select your state</option>
+                <option *ngFor="let state of states" [value]="state">{{ state }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ZIP Code</label>
+              <input type="text" formControlName="zipCode" placeholder="ZIP code">
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" [disabled]="profileForm.invalid || loading">
+            {{ loading ? 'Updating...' : 'Update Profile' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

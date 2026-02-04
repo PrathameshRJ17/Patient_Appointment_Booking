@@ -1,0 +1,27 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="hospital-branding">
+      <div class="hospital-logo">
+        <div class="logo-icon">+</div>
+        <div class="logo-text">
+          <h1>Pulse Pharma</h1>
+          <p>Healthcare Management System</p>
+        </div>
+      </div>
+      <div class="hospital-tagline">
+        <p>Your Health, Our Priority</p>
+      </div>
+    </div>
+    <h2>Sign in to Your Account</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <input id="email" name="email" formControlName="email" placeholder="Email" />
+      <input id="password" name="password" formControlName="password" type="password" placeholder="Password" />
+      <button type="submit" [disabled]="loading">Login</button>
+      <p *ngIf="error" class="error">{{ error }}</p>
+    </form>
+    <div class="register-footer">
+      <span>New Patient? Create Your Account</span>
+      <button type="button" routerLink="/auth/register">Register</button>
+    </div>
+  </div>
+</div>

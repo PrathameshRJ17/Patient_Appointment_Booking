@@ -1,0 +1,400 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Admin Portal</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <button (click)="activeTab='overview'" [class.active]="activeTab=='overview'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Overview</span>
+      </button>
+      <button (click)="activeTab='hospitals'" [class.active]="activeTab=='hospitals'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Hospitals</span>
+      </button>
+
+      <button (click)="activeTab='doctors'" [class.active]="activeTab=='doctors'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">All Doctors</span>
+      </button>
+      <button (click)="activeTab='patients'" [class.active]="activeTab=='patients'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">All Patients</span>
+      </button>
+      <button (click)="activeTab='analytics'" [class.active]="activeTab=='analytics'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Analytics</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-wrapper">
+      <div class="content-header">
+        <h1>{{ activeTab === 'overview' ? 'System Overview' : activeTab === 'hospitals' ? 'Hospital Management' : activeTab === 'doctors' ? 'Doctor Management' : activeTab === 'analytics' ? 'Revenue Analytics' : 'Patient Management' }}</h1>
+      </div>
+
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Overview Tab -->
+  <div *ngIf="activeTab=='overview'" class="tab-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalHospitals }}</div>
+        <div class="stat-label">Total Hospitals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalDoctors }}</div>
+        <div class="stat-label">Total Doctors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalPatients }}</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ counts.totalAppointments }}</div>
+        <div class="stat-label">Total Appointments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hospitals Tab -->
+  <div *ngIf="activeTab=='hospitals'" class="tab-content">
+    <div class="tab-header">
+      <h2>Hospital Management ({{ hospitals.length }})</h2>
+      <button (click)="openHospitalForm()" class="btn-primary">Add New Hospital</button>
+    </div>
+    
+    <div *ngIf="loading" class="loading">Loading hospitals...</div>
+
+    <div *ngIf="!loading && hospitals.length === 0" class="empty-state">No hospitals registered</div>
+
+    <div *ngIf="!loading && hospitals.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hospital of hospitals">
+            <td>{{ hospital.name }}</td>
+            <td>{{ hospital.city }}</td>
+            <td>{{ hospital.state }}</td>
+            <td>{{ hospital.phoneNumber }}</td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(hospital.status)">{{ hospital.status }}</span>
+            </td>
+            <td>
+              <button (click)="editHospital(hospital)" class="btn-small">Edit</button>
+              <button (click)="deleteHospital(hospital.hospitalId)" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Hospital Form Modal -->
+    <div *ngIf="showHospitalForm" class="modal-overlay" (click)="cancelHospitalForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ editingHospital ? 'Edit Hospital' : 'Add New Hospital' }}</h3>
+          <button class="close-btn" (click)="cancelHospitalForm()">×</button>
+        </div>
+        <form [formGroup]="hospitalForm" (ngSubmit)="saveHospital()" class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hospital Name *</label>
+              <input type="text" formControlName="name" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="tel" formControlName="phoneNumber" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Address *</label>
+            <textarea formControlName="address" required></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>City *</label>
+              <input type="text" formControlName="city" required>
+            </div>
+            <div class="form-group">
+              <label>State *</label>
+              <input type="text" formControlName="state" required>
+            </div>
+            <div class="form-group">
+              <label>ZIP Code *</label>
+              <input type="text" formControlName="zipCode" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude (Auto-filled)</label>
+              <input type="number" formControlName="latitude" step="any" placeholder="Will be auto-filled from address" readonly>
+            </div>
+            <div class="form-group">
+              <label>Longitude (Auto-filled)</label>
+              <input type="number" formControlName="longitude" step="any" placeholder="Will be auto-filled from address" readonly>
+            </div>
+          </div>
+          
+          <div class="form-group" *ngIf="editingHospital">
+            <label>Status *</label>
+            <select formControlName="status" required>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn-primary" [disabled]="hospitalForm.invalid || loading">
+              {{ loading ? 'Saving...' : (editingHospital ? 'Update' : 'Create') }}
+            </button>
+            <button type="button" (click)="cancelHospitalForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Doctors Tab -->
+  <div *ngIf="activeTab=='doctors'" class="tab-content">
+    <div class="tab-header">
+      <h2>All Doctors ({{ doctors.length }})</h2>
+      <button (click)="openDoctorForm()" class="btn-primary">Add New Doctor</button>
+    </div>
+    
+    <div *ngIf="loading" class="loading">Loading doctors...</div>
+
+    <div *ngIf="!loading && doctors.length === 0" class="empty-state">No doctors registered</div>
+
+    <div *ngIf="!loading && doctors.length > 0">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Specialization</th>
+            <th>Hospital</th>
+            <th>Experience</th>
+            <th>Consultation Fees</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doctor of doctors">
+            <td>{{ doctor.fullName || 'N/A' }}</td>
+            <td>{{ doctor.email || 'N/A' }}</td>
+            <td>{{ doctor.specialization || 'N/A' }}</td>
+            <td>{{ doctor.hospitalName || 'N/A' }}</td>
+            <td>{{ doctor.experienceYears || 0 }} years</td>
+            <td>
+              <div>Face-to-Face: ₹{{ doctor.faceToFaceFee || 0 }}</div>
+              <div>Telemedicine: ₹{{ doctor.telemedicineFee || 0 }}</div>
+            </td>
+            <td>
+              <button (click)="editDoctor(doctor)" class="btn-small">Edit</button>
+              <button (click)="sendCredentials(doctor.doctorId, doctor.email)" class="btn-small">Send Credentials</button>
+              <button (click)="deleteDoctor(doctor.doctorId)" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Doctor Form Modal -->
+    <div *ngIf="showDoctorForm" class="modal-overlay" (click)="cancelDoctorForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ editingDoctor ? 'Edit Doctor' : 'Add New Doctor' }}</h3>
+          <button class="close-btn" (click)="cancelDoctorForm()">×</button>
+        </div>
+        <form [formGroup]="doctorForm" (ngSubmit)="saveDoctor()" class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" formControlName="fullName" required>
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" formControlName="email" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="tel" formControlName="phoneNumber" required>
+            </div>
+            <div class="form-group">
+              <label>Gender *</label>
+              <select formControlName="gender" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Specialization *</label>
+              <input type="text" formControlName="specialization" required>
+            </div>
+            <div class="form-group">
+              <label>Hospital *</label>
+              <select formControlName="hospitalId" required>
+                <option value="">Select Hospital</option>
+                <option *ngFor="let hospital of hospitals" [value]="hospital.hospitalId">
+                  {{ hospital.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Experience (Years) *</label>
+              <input type="number" formControlName="experienceYears" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Qualification *</label>
+              <input type="text" formControlName="qualification" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Face-to-Face Fee (₹) *</label>
+              <input type="number" formControlName="faceToFaceFee" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Telemedicine Fee (₹) *</label>
+              <input type="number" formControlName="telemedicineFee" min="0" required>
+            </div>
+          </div>
+          
+          <div class="form-row" *ngIf="!editingDoctor">
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" formControlName="password" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn-primary" [disabled]="doctorForm.invalid || loading">
+              {{ loading ? 'Saving...' : (editingDoctor ? 'Update Doctor' : 'Create Doctor') }}
+            </button>
+            <button type="button" (click)="cancelDoctorForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Patients Tab -->
+  <div *ngIf="activeTab=='patients'" class="tab-content">
+    <div class="tab-header">
+      <h2>All Patients ({{ patients.length }})</h2>
+    </div>
+    
+    <div *ngIf="loading" class="loading">Loading patients...</div>
+
+    <div *ngIf="!loading && patients.length === 0" class="empty-state">No patients registered</div>
+
+    <div *ngIf="!loading && patients.length > 0" class="users-table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Registered On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let patient of patients">
+            <td>{{ patient.fullName }}</td>
+            <td>{{ patient.email }}</td>
+            <td>{{ patient.phoneNumber || '-' }}</td>
+            <td>{{ patient.gender || '-' }}</td>
+            <td>{{ patient.createdAt ? (patient.createdAt | date:'shortDate') : '-' }}</td>
+            <td>
+              <button (click)="deleteUser(patient.userId, 'Patient')" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Analytics Tab -->
+  <div *ngIf="activeTab=='analytics'" class="tab-content">
+    <h2>Revenue & Analytics</h2>
+    
+    <div class="analytics-grid">
+      <div class="analytics-card revenue-card">
+        <h3>Total Revenue</h3>
+        <div class="revenue-amount">₹{{ analytics.totalRevenue | number:'1.2-2' }}</div>
+        <p>From completed appointments</p>
+      </div>
+    </div>
+
+    <div class="analytics-section">
+      <h3>State-wise Revenue Distribution</h3>
+      <div class="state-revenue-grid">
+        <div *ngFor="let state of analytics.stateWiseRevenue" class="state-card">
+          <div class="state-name">{{ state.state }}</div>
+          <div class="state-revenue">₹{{ state.revenue | number:'1.2-2' }}</div>
+          <div class="state-appointments">{{ state.appointments }} appointments</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-section">
+      <h3>Top Cities by Appointments</h3>
+      <div class="city-list">
+        <div *ngFor="let city of analytics.cityWiseAppointments" class="city-item">
+          <span class="city-name">{{ city.city }}</span>
+          <span class="city-count">{{ city.count }} appointments</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-section">
+      <h3>Monthly Revenue Trend (Last 12 Months)</h3>
+      <div class="monthly-revenue-list">
+        <div *ngFor="let month of analytics.monthlyRevenue" class="month-item">
+          <span class="month-label">{{ getMonthName(month.month) }} {{ month.year }}</span>
+          <span class="month-revenue">₹{{ month.revenue | number:'1.2-2' }}</span>
+          <span class="month-appointments">{{ month.appointments }} appointments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,509 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Doctor Portal</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <button (click)="setActiveTab('appointments')" [class.active]="activeTab=='appointments'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">My Appointments</span>
+      </button>
+      <button (click)="setActiveTab('completed')" [class.active]="activeTab=='completed'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Completed</span>
+      </button>
+      <button (click)="setActiveTab('performance')" [class.active]="activeTab=='performance'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">Performance</span>
+      </button>
+      <button (click)="setActiveTab('profile')" [class.active]="activeTab=='profile'" class="nav-item">
+        <span class="nav-icon"></span>
+        <span class="nav-text">My Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-wrapper">
+      <div class="content-header">
+        <h1>{{ activeTab === 'appointments' ? 'My Appointments' : activeTab === 'completed' ? 'Completed Appointments' : activeTab === 'performance' ? 'Performance Dashboard' : 'My Profile' }}</h1>
+      </div>
+
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Appointments Tab -->
+  <div *ngIf="activeTab=='appointments'" class="tab-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h2>My Appointments</h2>
+    </div>
+    <div *ngIf="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading appointments...</p>
+    </div>
+
+    <div *ngIf="!loading && appointments.length === 0" class="empty-state">
+      <p>No appointments scheduled</p>
+    </div>
+
+    <div *ngIf="!loading && appointments.length > 0" class="appointments-grid">
+      <div *ngFor="let apt of appointments" class="appointment-card">
+        <div class="payment-alert-banner" *ngIf="isPaidAppointment(apt) && (apt.statusText || apt.status) === 'Completed'">
+          <strong>Payment Received:</strong> {{ apt.patientName }} has paid the bill for this appointment
+        </div>
+        <div class="card-header">
+          <div class="patient-info">
+            <div class="patient-avatar">
+              <div class="avatar-placeholder">{{ apt.patientName?.charAt(0) || 'P' }}</div>
+            </div>
+            <div>
+              <h3>{{ apt.patientName }}</h3>
+              <span class="appointment-id">ID: #{{ apt.appointmentId }}</span>
+            </div>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(getStatusText(apt.statusText || apt.status))">{{ getStatusText(apt.statusText || apt.status) }}</span>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <div>
+                <div class="info-label">Date</div>
+                <div class="info-value">{{ apt.appointmentDate | date:'MMM d, y' }}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <div>
+                <div class="info-label">Time</div>
+                <div class="info-value">{{ apt.timeSlotDisplay || apt.timeSlot }}</div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="apt.symptoms" class="symptoms-section">
+            <div class="symptoms-label">Patient Symptoms:</div>
+            <div class="symptoms-text">{{ apt.symptoms }}</div>
+          </div>
+          <div *ngIf="(apt.statusText || apt.status) === 'Pending'" class="card-actions">
+            <button (click)="approveAppointment(apt)" class="btn-approve">
+              Approve
+            </button>
+            <button (click)="disapproveAppointment(apt)" class="btn-disapprove">
+              Disapprove
+            </button>
+            <button (click)="rescheduleAppointment(apt)" class="btn-reschedule">
+              Reschedule
+            </button>
+          </div>
+          <div *ngIf="(apt.statusText || apt.status) === 'Confirmed' || (apt.statusText || apt.status) === 'Rescheduled'" class="card-actions">
+            <button (click)="openPrescriptionForm(apt)" class="btn-prescription">
+              Add Prescription
+            </button>
+            <button (click)="viewPatientHistory(apt.patientId)" class="btn-history">
+              View History
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST: Simple div for UPDATE modal -->
+    <div *ngIf="showUpdatePrescriptionForm" style="position: fixed; top: 10px; left: 10px; background: blue; color: white; padding: 20px; z-index: 999999; font-size: 20px; border: 5px solid green;">
+      UPDATE MODAL IS ACTIVE: {{ showUpdatePrescriptionForm }}
+      <br>Patient: {{ selectedAppointment?.patientName }}
+      <br><button (click)="showUpdatePrescriptionForm = false" style="background: white; color: black; padding: 5px;">CLOSE UPDATE</button>
+    </div>
+
+    <!-- TEST: Simple div to verify Angular rendering -->
+    <div *ngIf="showPrescriptionForm" style="position: fixed; top: 10px; right: 10px; background: red; color: white; padding: 20px; z-index: 999999; font-size: 20px; border: 5px solid yellow;">
+      MODAL IS ACTIVE: {{ showPrescriptionForm }}
+      <br>Patient: {{ selectedAppointment?.patientName }}
+      <br><button (click)="showPrescriptionForm = false" style="background: white; color: black; padding: 5px;">CLOSE</button>
+    </div>
+
+    <!-- Prescription Form Modal -->
+    <div *ngIf="showPrescriptionForm" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 999999; display: flex; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h3 style="margin: 0; color: #333;">{{ isUpdatingPrescription() ? 'Update Prescription' : 'Add Prescription' }}</h3>
+            <p style="margin: 5px 0 0 0; color: #666;">For {{ selectedAppointment?.patientName }}</p>
+          </div>
+          <button (click)="cancelPrescription()" style="background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px;">×</button>
+        </div>
+        <form [formGroup]="prescriptionForm" (ngSubmit)="isUpdatingPrescription() ? savePrescriptionUpdate() : addPrescription()">
+          <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Medications</label>
+              <textarea formControlName="medications" rows="4" placeholder="List medications with dosage..." required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Diagnosis</label>
+              <textarea formControlName="diagnosis" rows="3" placeholder="Enter diagnosis..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Instructions</label>
+              <textarea formControlName="instructions" rows="3" placeholder="Instructions for patient..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Notes</label>
+              <textarea formControlName="notes" rows="2" placeholder="Additional notes..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="submit" [disabled]="prescriptionForm.invalid || loading" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+              {{ loading ? 'Saving...' : (isUpdatingPrescription() ? 'Update Prescription' : 'Mark as Done & Save Prescription') }}
+            </button>
+            <button type="button" (click)="cancelPrescription()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Remarks Form Modal -->
+    <div *ngIf="showRemarksForm && selectedAppointment" class="modal-overlay" (click)="cancelRemarks()">
+      <div class="modal-content fancy-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Mark Appointment as Done</h3>
+            <p class="modal-subtitle">For {{ selectedAppointment.patientName }}</p>
+          </div>
+          <button class="close-btn" (click)="cancelRemarks()">×</button>
+        </div>
+        <form [formGroup]="remarksForm" (ngSubmit)="addRemarks()">
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Remarks:</label>
+              <textarea formControlName="remarks" rows="5" placeholder="Enter consultation remarks..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn-save" [disabled]="remarksForm.invalid || loading">
+              {{ loading ? 'Marking...' : 'Mark as Done' }}
+            </button>
+            <button type="button" (click)="cancelRemarks()" class="btn-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Appointments Tab -->
+  <div *ngIf="activeTab=='completed'" class="tab-content">
+    <h2>Completed Appointments</h2>
+    <div *ngIf="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading completed appointments...</p>
+    </div>
+
+    <div *ngIf="!loading && completedAppointments.length === 0" class="empty-state">
+      <p>No completed appointments yet</p>
+    </div>
+
+    <div *ngIf="!loading && completedAppointments.length > 0" class="appointments-grid">
+      <div *ngFor="let apt of completedAppointments" class="appointment-card">
+        <div class="card-header">
+          <div class="patient-info">
+            <div class="patient-avatar">
+              <div class="avatar-placeholder">{{ apt.patientName?.charAt(0) || 'P' }}</div>
+            </div>
+            <div>
+              <h3>{{ apt.patientName }}</h3>
+              <span class="appointment-id">ID: #{{ apt.appointmentId }}</span>
+            </div>
+          </div>
+          <span class="status-badge completed">Completed</span>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <div>
+                <div class="info-label">Date</div>
+                <div class="info-value">{{ apt.appointmentDate | date:'MMM d, y' }}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <div>
+                <div class="info-label">Time</div>
+                <div class="info-value">{{ apt.timeSlotDisplay || apt.timeSlot }}</div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="apt.prescription" class="prescription-section">
+            <div class="prescription-label">Current Prescription:</div>
+            <div class="prescription-details">
+              <p><strong>Medications:</strong> {{ apt.prescription.medications }}</p>
+              <p *ngIf="apt.prescription.diagnosis"><strong>Diagnosis:</strong> {{ apt.prescription.diagnosis }}</p>
+              <p *ngIf="apt.prescription.instructions"><strong>Instructions:</strong> {{ apt.prescription.instructions }}</p>
+            </div>
+          </div>
+          <div class="card-actions" style="pointer-events: auto; z-index: 10;">
+            <button (click)="openUpdatePrescriptionModal(apt)" class="btn-prescription" type="button" style="pointer-events: auto;">
+              Update Prescription
+            </button>
+            <button (click)="viewPatientHistory(apt.patientId)" class="btn-history" type="button" style="pointer-events: auto;">
+              View History
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div *ngIf="activeTab=='profile'" class="tab-content">
+    <h2>My Profile</h2>
+    <div *ngIf="doctorInfo" class="profile-section">
+      <div class="profile-header-info" style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+        <div class="profile-image-container">
+          <img *ngIf="doctorInfo.profilePictureUrl" [src]="doctorInfo.profilePictureUrl" alt="Profile" class="profile-image">
+          <div *ngIf="!doctorInfo.profilePictureUrl" class="profile-placeholder">{{ doctorInfo.fullName?.charAt(0) || 'D' }}</div>
+        </div>
+        <div class="profile-main-details">
+          <h3>{{ doctorInfo.fullName }}</h3>
+          <p class="specialization" style="color: #666; font-size: 1.1rem;">{{ doctorInfo.specialization }}</p>
+          <p class="phone" style="color: #666;">{{ doctorInfo.phone || doctorInfo.phoneNumber || 'No phone added' }}</p>
+        </div>
+      </div>
+
+      <div class="profile-details">
+        <div class="detail-row">
+          <span class="detail-label">Qualification:</span>
+          <span class="detail-value">{{ doctorInfo.qualification }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Experience:</span>
+          <span class="detail-value">{{ doctorInfo.experienceYears }} years</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Face to Face Fee:</span>
+          <span class="detail-value">₹{{ doctorInfo.faceToFaceFee }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Telemedicine Fee:</span>
+          <span class="detail-value">₹{{ doctorInfo.telemedicineFee }}</span>
+        </div>
+      </div>
+
+      <button (click)="editMode = !editMode" class="btn-edit">
+        {{ editMode ? 'Cancel Edit' : 'Edit Profile' }}
+      </button>
+
+      <form *ngIf="editMode" [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+          <div class="form-group">
+            <label>Full Name:</label>
+            <input type="text" formControlName="fullName" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number:</label>
+            <input type="text" formControlName="phoneNumber" required>
+          </div>
+          <div class="form-group">
+            <label>Experience Years:</label>
+            <input type="number" formControlName="experienceYears" required min="0">
+          </div>
+          <div class="form-group">
+            <label>Specialization:</label>
+            <input type="text" formControlName="specialization" required>
+          </div>
+          <div class="form-group">
+            <label>Qualification:</label>
+            <input type="text" formControlName="qualification" required>
+          </div>
+          <div class="form-group">
+            <label>Face to Face Fee (₹):</label>
+            <input type="number" formControlName="faceToFaceFee" required min="0">
+          </div>
+          <div class="form-group">
+            <label>Telemedicine Fee (₹):</label>
+            <input type="number" formControlName="telemedicineFee" required min="0">
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Profile Image:</label>
+            <input type="file" (change)="onFileSelected($event)" accept="image/*">
+            <div *ngIf="profileForm.get('profilePictureUrl')?.value" class="image-preview">
+              <img [src]="profileForm.get('profilePictureUrl')?.value" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px;">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="profileForm.invalid || loading" style="margin-top: 20px;">
+          {{ loading ? 'Updating...' : 'Update Profile' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reschedule Appointment Modal -->
+  <div *ngIf="showRescheduleForm" class="modal-overlay" (click)="cancelReschedule()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Reschedule Appointment</h3>
+          <p class="modal-subtitle">For {{ selectedAppointment?.patientName }}</p>
+        </div>
+        <button class="close-btn" (click)="cancelReschedule()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="current-appointment">
+          <h4>Current Appointment</h4>
+          <p><strong>Date:</strong> {{ selectedAppointment?.appointmentDate | date:'mediumDate' }}</p>
+          <p><strong>Time:</strong> {{ selectedAppointment?.timeSlotDisplay || selectedAppointment?.timeSlot }}</p>
+        </div>
+        
+        <div class="reschedule-form">
+          <div class="form-group">
+            <label>Select New Date</label>
+            <input type="date" [min]="minDate" [(ngModel)]="rescheduleDate" (change)="loadAvailableSlotsForReschedule(rescheduleDate)" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Reason for Rescheduling</label>
+            <textarea [(ngModel)]="rescheduleReason" rows="2" placeholder="Enter reason for rescheduling..." class="form-control" required></textarea>
+          </div>
+        </div>
+        
+        <div class="available-slots-section">
+          <h4>Select New Time Slot</h4>
+          <div *ngIf="loadingSlots" class="loading-slots">
+            <div class="mini-spinner"></div>
+            <span>Loading slots...</span>
+          </div>
+          <div *ngIf="!loadingSlots && availableSlots.length === 0" class="no-slots">
+            No available slots for this date. Please select another date.
+          </div>
+          <div *ngIf="!loadingSlots && availableSlots.length > 0" class="slots-grid">
+            <button *ngFor="let slot of availableSlots" 
+                    class="slot-btn" 
+                    [class.selected]="selectedSlot === slot"
+                    (click)="selectedSlot = slot">
+              {{ slot.display }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" [disabled]="!selectedSlot || !rescheduleReason || loading" (click)="confirmReschedule()">
+          {{ loading ? 'Rescheduling...' : 'Confirm Reschedule' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="cancelReschedule()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Performance Tab -->
+  <div *ngIf="activeTab=='performance'" class="tab-content">
+    <div *ngIf="performanceStats" class="performance-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ performanceStats.totalAppointments }}</div>
+          <div class="stat-label">Total Appointments</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ performanceStats.completedAppointments }}</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ performanceStats.pendingAppointments }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ performanceStats.completionRate }}%</div>
+          <div class="stat-label">Completion Rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient History Modal -->
+  <div *ngIf="showPatientHistory" class="modal-overlay" (click)="closePatientHistory()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Patient Medical History</h3>
+          <p class="modal-subtitle" *ngIf="patientHistory">{{ patientHistory.patientInfo.fullName }}</p>
+        </div>
+        <button class="close-btn" (click)="closePatientHistory()">×</button>
+      </div>
+      <div class="modal-body" *ngIf="patientHistory">
+        <div class="patient-info-card">
+          <h4>Patient Information</h4>
+          <p><strong>Email:</strong> {{ patientHistory.patientInfo.email }}</p>
+          <p><strong>Phone:</strong> {{ patientHistory.patientInfo.phone }}</p>
+          <p><strong>Gender:</strong> {{ patientHistory.patientInfo.gender }}</p>
+          <p><strong>Total Appointments:</strong> {{ patientHistory.totalAppointments }}</p>
+        </div>
+        
+        <div class="history-section">
+          <h4>Previous Appointments</h4>
+          <div *ngFor="let apt of patientHistory.appointments" class="history-item">
+            <div class="history-date">{{ apt.date | date:'mediumDate' }} at {{ apt.time }}</div>
+            <div class="history-details">
+              <p><strong>Doctor:</strong> {{ apt.doctorName }} ({{ apt.specialization }})</p>
+              <p><strong>Type:</strong> {{ apt.consultationType }}</p>
+              <p><strong>Status:</strong> <span class="status-badge" [ngClass]="getStatusClass(apt.statusText)">{{ apt.statusText }}</span></p>
+              <p *ngIf="apt.symptoms"><strong>Symptoms:</strong> {{ apt.symptoms }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="history-section" *ngIf="patientHistory.prescriptions.length > 0">
+          <h4>Previous Prescriptions</h4>
+          <div *ngFor="let presc of patientHistory.prescriptions" class="history-item">
+            <div class="history-date">{{ presc.date | date:'mediumDate' }}</div>
+            <div class="history-details">
+              <p><strong>Doctor:</strong> {{ presc.doctorName }}</p>
+              <p *ngIf="presc.diagnosis"><strong>Diagnosis:</strong> {{ presc.diagnosis }}</p>
+              <p><strong>Medications:</strong> {{ presc.medications }}</p>
+              <p *ngIf="presc.instructions"><strong>Instructions:</strong> {{ presc.instructions }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closePatientHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Prescription Modal -->
+<div *ngIf="showUpdatePrescriptionForm" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 999999; display: flex; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h3 style="margin: 0; color: #333;">Update Prescription</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">For {{ selectedAppointment?.patientName }}</p>
+      </div>
+      <button (click)="showUpdatePrescriptionForm = false" style="background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px;">×</button>
+    </div>
+    <form [formGroup]="prescriptionForm" (ngSubmit)="savePrescriptionUpdate()">
+      <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Medications</label>
+          <textarea formControlName="medications" rows="4" placeholder="List medications with dosage..." required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Diagnosis</label>
+          <textarea formControlName="diagnosis" rows="3" placeholder="Enter diagnosis..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Instructions</label>
+          <textarea formControlName="instructions" rows="3" placeholder="Instructions for patient..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Notes</label>
+          <textarea formControlName="notes" rows="2" placeholder="Additional notes..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="submit" [disabled]="prescriptionForm.invalid || loading" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+          {{ loading ? 'Updating...' : 'Update Prescription' }}
+        </button>
+        <button type="button" (click)="showUpdatePrescriptionForm = false" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
