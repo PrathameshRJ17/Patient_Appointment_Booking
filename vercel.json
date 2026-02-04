@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "name": "pulse-hospital-frontend",
-
   "rewrites": [
     {
       "source": "/(.*)",
